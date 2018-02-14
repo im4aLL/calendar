@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>calendar</title>
+
+    <style>
+        * { margin: 0; padding: 0; }
+        html {box-sizing: border-box; } *, *:before, *:after {box-sizing: inherit; } 
+        body { font-family: Arial, Helvetica, sans-serif; }
+
+        .calendar { font-size: 14px; border-collapse: collapse; border-spacing: 0; margin: 10px 20px; table-layout: fixed; }
+        .calendar th, .calendar td { padding: 10px; border: 1px solid #ddd; text-align: center } 
+        .calendar-title { padding: 20px 20px 0 }
+    </style>
+</head>
+<body>
+
+    <p class="calendar-title"></p>
+    <table class="calendar">
+        <thead>
+            <tr>
+                
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+    
+    <script src="jquery-3.3.1.min.js"></script>
+    <script>
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayShortNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        
+        let currentMonth = getCurrentMonthIndex() + 1;
+        let currentDay = getCurrentDayIndex() + 1;
+        let currentYear = getCurrentYear();
+
+        function getCurrentMonthIndex() {
+            let date = new Date();
+
+            return date.getMonth();
+        }
+
+        function getCurrentDayIndex() {
+            let date = new Date();
+
+            return date.getDay();
+        }
+
+        function getCurrentYear() {
+            let date = new Date();
+
+            return date.getFullYear();
+        }
+
+        function getDaysArray(year, month) {
+            let date = new Date(year, month - 1, 1);
+            let result = [];
+            while (date.getMonth() == month - 1) {
+                let obj = {
+                    'date': date.getDate(),
+                    'dayIndex': date.getDay(),
+                    'day': dayShortNames[date.getDay()],
+                    'monthIndex': date.getMonth(),
+                    'month': monthShortNames[date.getMonth()],
+                    'year': date.getFullYear()
+                };
+                result.push(obj);
+                date.setDate(date.getDate() + 1);
+            }
+            return result;
+        }
+
+        function getLastMonthDateArray(year, month) {
+            let date = new Date(year, month - 1, 1);
+
+            date.setMonth(date.getMonth() - 1);
+            date.setDate(1);            
+
+            return getDaysArray(date.getFullYear(), date.getMonth() + 1);
+        }
+
+        function getNextMonthDateArray(year, month) {
+            let date = new Date(year, month - 1, 1);
+
+            date.setMonth(date.getMonth() + 1);
+            date.setDate(1);
+
+            return getDaysArray(date.getFullYear(), date.getMonth() + 1);
+        }
+
+
+        function populateDayNames() {
+            let html = '';
+            for(let day of dayShortNames) {
+                html += `
+                    <th>${day}</th>
+                `;
+            }
+
+            $('.calendar').find('thead tr').html(html);
+        }
+
+        function populateDays() {
+            let html = '';
+
+            currentYear = 2018;
+            currentMonth = 2;
+
+            console.log('Last month');
+            console.log('======================================');
+            let lastMonthDateArray = getLastMonthDateArray(currentYear, currentMonth);
+            console.log(lastMonthDateArray);
+
+            console.log('Current month');
+            console.log('======================================');
+            let dateArray = getDaysArray(currentYear, currentMonth);
+            console.log(dateArray);
+            $('.calendar-title').html( monthNames[currentMonth - 1] + ', ' + currentYear );
+
+            console.log('Next month');
+            console.log('======================================');
+            let nextMonthDateArray = getNextMonthDateArray(currentYear, currentMonth);
+            console.log(nextMonthDateArray);
+            
+            let counter = 0;
+            for(let dateObject of dateArray) {
+                if(dateObject.date == 1) {
+                    html += '<tr>';
+                }
+
+                if(dateObject.dayIndex == 0 && dateObject.date != 1) {
+                    html += '</tr>';
+                    html += '<tr>';
+                }
+
+                if(dateObject.dayIndex > 0 && dateObject.date == 1) {
+                    console.log("Fill last months date total " + dateObject.dayIndex);
+
+                    html += `<td colspan="${dateObject.dayIndex}"></td>`;
+                }
+
+                html += `<td>${dateObject.date}</td>`;
+                
+                counter++;
+
+                if(dateArray.length == counter) {
+                    console.log("Fill next months date total " + Math.abs(dateObject.dayIndex - 6));
+                    
+                    if(dateObject.dayIndex < 6) {
+                        let colSpan = Math.abs(dateObject.dayIndex - 6);
+                        
+                        html += `<td colspan="${colSpan}"></td>`;
+                    }
+                    html += '</tr>';
+                }
+            }
+
+            $('.calendar').find('tbody').html(html);
+        }
+
+        function buildcalendar() {
+            populateDayNames();
+            populateDays();
+        }
+
+        $(document).ready(function () {
+            buildcalendar();
+        });
+    </script>
+</body>
+</html>
