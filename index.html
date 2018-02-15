@@ -12,6 +12,8 @@
         .calendar { font-size: 14px; border-collapse: collapse; border-spacing: 0; margin: 10px 20px; table-layout: fixed; }
         .calendar th, .calendar td { padding: 10px; border: 1px solid #ddd; text-align: center } 
         .calendar-title { padding: 20px 20px 0 }
+        .dimmed { opacity: 0.5; }
+        .current { background: #ddd; }
     </style>
 </head>
 <body>
@@ -28,7 +30,6 @@
         </tbody>
     </table>
     
-    <script src="jquery-3.3.1.min.js"></script>
     <script>
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const dayShortNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -102,30 +103,18 @@
                 `;
             }
 
-            $('.calendar').find('thead tr').html(html);
+            let c = document.querySelector('.calendar thead tr');
+            c.innerHTML = html;
         }
 
-        function populateDays() {
+        function populateDays(currentYear, currentMonth) {
             let html = '';
 
-            currentYear = 2018;
-            currentMonth = 2;
-
-            console.log('Last month');
-            console.log('======================================');
             let lastMonthDateArray = getLastMonthDateArray(currentYear, currentMonth);
-            console.log(lastMonthDateArray);
-
-            console.log('Current month');
-            console.log('======================================');
             let dateArray = getDaysArray(currentYear, currentMonth);
-            console.log(dateArray);
-            $('.calendar-title').html( monthNames[currentMonth - 1] + ', ' + currentYear );
+            document.querySelector('.calendar-title').innerHTML = monthNames[currentMonth - 1] + ', ' + currentYear;
 
-            console.log('Next month');
-            console.log('======================================');
             let nextMonthDateArray = getNextMonthDateArray(currentYear, currentMonth);
-            console.log(nextMonthDateArray);
             
             let counter = 0;
             for(let dateObject of dateArray) {
@@ -139,38 +128,45 @@
                 }
 
                 if(dateObject.dayIndex > 0 && dateObject.date == 1) {
-                    console.log("Fill last months date total " + dateObject.dayIndex);
+                    let arr = lastMonthDateArray.slice(-dateObject.dayIndex);
+                    
+                    for(let d of arr) {
+                        html += `<td class="dimmed">${d.date}</td>`;
+                    }
 
-                    html += `<td colspan="${dateObject.dayIndex}"></td>`;
+                    // html += `<td colspan="${dateObject.dayIndex}"></td>`;
                 }
-
-                html += `<td>${dateObject.date}</td>`;
+                
+                html += `<td${currentDay == dateObject.date ? ' class="current"' : ''}>${dateObject.date}</td>`;
                 
                 counter++;
 
                 if(dateArray.length == counter) {
-                    console.log("Fill next months date total " + Math.abs(dateObject.dayIndex - 6));
-                    
                     if(dateObject.dayIndex < 6) {
                         let colSpan = Math.abs(dateObject.dayIndex - 6);
+                        let arr = nextMonthDateArray.slice(0, colSpan);
+                    
+                        for(let d of arr) {
+                            html += `<td class="dimmed">${d.date}</td>`;
+                        }
                         
-                        html += `<td colspan="${colSpan}"></td>`;
+                        // html += `<td colspan="${colSpan}"></td>`;
                     }
                     html += '</tr>';
                 }
             }
 
-            $('.calendar').find('tbody').html(html);
+            document.querySelector('.calendar tbody').innerHTML = html;
         }
 
-        function buildcalendar() {
+        function buildcalendar(currentYear, currentMonth) {
             populateDayNames();
-            populateDays();
+            populateDays(currentYear, currentMonth);
         }
 
-        $(document).ready(function () {
-            buildcalendar();
-        });
+        window.onload = () => {
+            buildcalendar(currentYear, currentMonth);
+        }
     </script>
 </body>
 </html>
